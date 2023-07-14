@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -7,9 +7,8 @@ function createRandomPost() {
     body: faker.hacker.phrase(),
   };
 }
-/* Create context Provider
- *
- */
+
+// Creating context object
 const PostContext = createContext();
 
 function PostProvider({ children }) {
@@ -52,4 +51,14 @@ function PostProvider({ children }) {
   );
 }
 
-export { PostProvider, PostContext };
+/* Create context Provider
+ *
+ */
+// Custom Corresponding Hook
+function usePosts() {
+  const context = useContext(PostContext);
+  if (context === undefined)
+    throw new Error("PostsContext was used outside of the PostProvider");
+  return context;
+}
+export { PostProvider, usePosts };
