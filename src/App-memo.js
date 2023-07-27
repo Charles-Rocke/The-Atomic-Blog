@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useMemo } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -41,10 +41,19 @@ function App() {
     [isFakeDark]
   );
 
-  const archiveOptions = {
-    show: false,
-    title: "Post archive in addition to main posts",
-  };
+  // below breaks memo becasue of new object creation each time App re-renders
+  // const archiveOptions = {
+  //   show: false,
+  //   title: "Post archive in addition to main posts",
+  // };
+
+  // below fixes what we create will be stored in cache, will be computed once in beginning and then never be re computed (like on first render)
+  const archiveOptions = useMemo(() => {
+    return {
+      show: false,
+      title: `Post archive in addition to ${posts.length} main posts`,
+    };
+  }, [posts.length]);
 
   return (
     <section>
