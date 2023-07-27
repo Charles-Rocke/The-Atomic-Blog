@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useMemo } from "react";
+import { memo, useEffect, useState, useMemo, useCallback } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -25,9 +25,10 @@ function App() {
         )
       : posts;
 
-  function handleAddPost(post) {
+  // only the function is memoized
+  const handleAddPost = useCallback(function handleAddPost(post) {
     setPosts((posts) => [post, ...posts]);
-  }
+  }, []);
 
   function handleClearPosts() {
     setPosts([]);
@@ -48,6 +49,7 @@ function App() {
   // };
 
   // below fixes what we create will be stored in cache, will be computed once in beginning and then never be re computed (like on first render)
+  // useMemo stores the result of a callback
   const archiveOptions = useMemo(() => {
     return {
       show: false,
@@ -71,7 +73,11 @@ function App() {
         setSearchQuery={setSearchQuery}
       />
       <Main posts={searchedPosts} onAddPost={handleAddPost} />
-      <Archive archiveOptions={archiveOptions} />
+      <Archive
+        setIsFakeDark={setIsFakeDark}
+        archiveOptions={archiveOptions}
+        onAddPost={handleAddPost}
+      />
       <Footer />
     </section>
   );
@@ -170,7 +176,7 @@ function List({ posts }) {
 
 // using memo significantly speeds up application when its prop doesn't change often EXTREMELY IMPORTANT if its a slow component like this one
 // doesn't re-render each time a change happens in a parent component
-const Archive = memo(function Archive({ archiveOptions }) {
+const Archive = memo(function Archive({ archiveOptions, onAddPost }) {
   // Here we don't need the setter function. We're only using state to store these posts because the callback function passed into useState (which generates the posts) is only called once, on the initial render. So we use this trick as an optimization technique, because if we just used a regular variable, these posts would be re-created on every render. We could also move the posts outside the components, but I wanted to show you this trick 😉
   const [posts] = useState(() =>
     // 💥 WARNING: This might make your computer slow! Try a smaller `length` first
@@ -193,7 +199,7 @@ const Archive = memo(function Archive({ archiveOptions }) {
               <p>
                 <strong>{post.title}:</strong> {post.body}
               </p>
-              {/* <button onClick={() => onAddPost(post)}>Add as new post</button> */}
+              <button onClick={() => onAddPost(post)}>Add as new post</button>
             </li>
           ))}
         </ul>
